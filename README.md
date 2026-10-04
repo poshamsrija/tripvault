@@ -1,4 +1,3 @@
-# tripvault
 # TripVault
 
 A travel memory journal built using the MERN stack.
