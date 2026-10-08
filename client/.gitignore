@@ -23,9 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 # Frontend environment variables
-client/.env
-client/.env.*
-!client/.env.example
+
 .env
 .env.*
 !.env.example
