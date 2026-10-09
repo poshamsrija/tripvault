@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+const mongoose = require("mongoose");
 const tripSchema = new mongoose.Schema(
   {
     title: {
@@ -43,4 +42,4 @@ const tripSchema = new mongoose.Schema(
 
 const Trip = mongoose.model("Trip", tripSchema);
 
-export default Trip;
+module.exports = Trip;
