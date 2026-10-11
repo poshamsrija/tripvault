@@ -19,10 +19,20 @@ try{
 	req.user=user;
 	next();
 }
-catch(error){
-	return res.status(500).json({
-		message:"Invalid or expired token." 
-	});
+catch (error) {
+  if (
+    error.name === "JsonWebTokenError" ||
+    error.name === "TokenExpiredError" ||
+    error.name === "NotBeforeError"
+  ) {
+    return res.status(401).json({
+      message: "Invalid or expired token.",
+    });
+  }
+
+  return res.status(500).json({
+    message: "Internal server error.",
+  });
 }
 };
 module.exports = authMiddleware;

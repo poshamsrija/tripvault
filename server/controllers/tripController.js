@@ -73,11 +73,17 @@ const getTripById = async (req, res) => {
     return res.status(200).json({
       trip,
     });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Failed to fetch trip.",
+  }  catch (error) {
+  if (error.name === "CastError") {
+    return res.status(400).json({
+      message: "Invalid trip ID.",
     });
   }
+
+  return res.status(500).json({
+    message: "Failed to fetch trip.",
+  });
+}
 };
 
 const updateTrip = async (req, res) => {
@@ -120,11 +126,17 @@ const updateTrip = async (req, res) => {
       message: "Trip updated successfully.",
       trip: updatedTrip,
     });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Failed to update trip.",
+  }  catch (error) {
+  if (error.name === "CastError") {
+    return res.status(400).json({
+      message: "Invalid trip ID.",
     });
   }
+
+  return res.status(500).json({
+    message: "Failed to fetch trip.",
+  });
+}
 };
 
 const deleteTrip = async (req, res) => {
@@ -149,11 +161,17 @@ const deleteTrip = async (req, res) => {
     return res.status(200).json({
       message: "Trip deleted successfully.",
     });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Failed to delete trip.",
+  }  catch (error) {
+  if (error.name === "CastError") {
+    return res.status(400).json({
+      message: "Invalid trip ID.",
     });
   }
+
+  return res.status(500).json({
+    message: "Failed to fetch trip.",
+  });
+}
 };
 
 module.exports = { createTrip,getTrips,getTripById,updateTrip,deleteTrip};
