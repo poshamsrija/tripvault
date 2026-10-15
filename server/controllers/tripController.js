@@ -1,3 +1,4 @@
+
 const Trip = require("../models/Trip");
 
 const createTrip = async (req, res) => {
@@ -32,6 +33,7 @@ const createTrip = async (req, res) => {
       trip,
     });
   } catch (error) {
+    console.error("Create trip error:", error.message);
     return res.status(500).json({
       message: "Failed to create trip.",
     });
@@ -49,11 +51,13 @@ const getTrips = async (req, res) => {
       trips,
     });
   } catch (error) {
+    console.error("Get trips error:", error.message);
     return res.status(500).json({
       message: "Failed to fetch trips.",
     });
   }
 };
+
 const getTripById = async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -70,20 +74,19 @@ const getTripById = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      trip,
-    });
-  }  catch (error) {
-  if (error.name === "CastError") {
-    return res.status(400).json({
-      message: "Invalid trip ID.",
+    return res.status(200).json({ trip });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid trip ID.",
+      });
+    }
+
+    console.error("Get trip by ID error:", error.message);
+    return res.status(500).json({
+      message: "Failed to fetch trip.",
     });
   }
-
-  return res.status(500).json({
-    message: "Failed to fetch trip.",
-  });
-}
 };
 
 const updateTrip = async (req, res) => {
@@ -96,7 +99,6 @@ const updateTrip = async (req, res) => {
       });
     }
 
-    // Only the trip owner can update it
     if (trip.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You are not authorized to update this trip.",
@@ -112,7 +114,6 @@ const updateTrip = async (req, res) => {
       rating,
     } = req.body;
 
-    // Update only fields provided by the client
     if (title !== undefined) trip.title = title;
     if (destination !== undefined) trip.destination = destination;
     if (startDate !== undefined) trip.startDate = startDate;
@@ -126,17 +127,18 @@ const updateTrip = async (req, res) => {
       message: "Trip updated successfully.",
       trip: updatedTrip,
     });
-  }  catch (error) {
-  if (error.name === "CastError") {
-    return res.status(400).json({
-      message: "Invalid trip ID.",
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid trip ID.",
+      });
+    }
+
+    console.error("Update trip error:", error.message);
+    return res.status(500).json({
+      message: "Failed to update trip.",
     });
   }
-
-  return res.status(500).json({
-    message: "Failed to fetch trip.",
-  });
-}
 };
 
 const deleteTrip = async (req, res) => {
@@ -149,7 +151,6 @@ const deleteTrip = async (req, res) => {
       });
     }
 
-    // Check whether the logged-in user owns this trip
     if (trip.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You are not authorized to delete this trip.",
@@ -161,17 +162,71 @@ const deleteTrip = async (req, res) => {
     return res.status(200).json({
       message: "Trip deleted successfully.",
     });
-  }  catch (error) {
-  if (error.name === "CastError") {
-    return res.status(400).json({
-      message: "Invalid trip ID.",
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid trip ID.",
+      });
+    }
+
+    console.error("Delete trip error:", error.message);
+    return res.status(500).json({
+      message: "Failed to delete trip.",
     });
   }
-
-  return res.status(500).json({
-    message: "Failed to fetch trip.",
-  });
-}
 };
 
-module.exports = { createTrip,getTrips,getTripById,updateTrip,deleteTrip};
+const uploadTripPhoto = async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.id);
+
+    if (!trip) {
+      return res.status(404).json({
+        message: "Trip not found.",
+      });
+    }
+
+    if (trip.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "You are not authorized to upload photos to this trip.",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Please upload an image.",
+      });
+    }
+
+    const imageUrl = req.file.path;
+
+    trip.photos.push(imageUrl);
+
+    if (!trip.coverImage) {
+      trip.coverImage = imageUrl;
+    }
+
+    await trip.save();
+
+    return res.status(200).json({
+      message: "Photo uploaded successfully.",
+      coverImage: trip.coverImage,
+      photos: trip.photos,
+    });
+  } catch (error) {
+    console.error("Photo upload error:", error.message);
+
+    return res.status(500).json({
+      message: "Failed to upload photo.",
+    });
+  }
+};
+
+module.exports = {
+  createTrip,
+  getTrips,
+  getTripById,
+  updateTrip,
+  deleteTrip,
+  uploadTripPhoto,
+};
