@@ -9,6 +9,7 @@ import {
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import CreateTrip from "./pages/CreateTrip";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -27,6 +28,10 @@ function App() {
           <Route
             path="/dashboard"
             element={<Dashboard />}
+          />
+          <Route
+            path="/trips/new"
+            element={<CreateTrip />}
           />
         </Route>
       </Routes>

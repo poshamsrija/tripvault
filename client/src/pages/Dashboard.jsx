@@ -11,17 +11,11 @@ function Dashboard() {
   const [error, setError] = useState("");
   const [trips, setTrips] = useState([]);
   const [tripsLoading, setTripsLoading] = useState(true);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const response = await api.get("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
+        const response = await api.get("/api/auth/me");
         setUser(response.data.user || response.data);
       } catch (err) {
         if (err.response?.status === 401) {
@@ -41,27 +35,27 @@ function Dashboard() {
 
     fetchUser();
   }, [navigate]);
-  
-useEffect(() => {
-  const fetchTrips = async () => {
-    try {
-      const response = await api.get("/api/trips");
-      setTrips(response.data.trips);
-    } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        navigate("/login", { replace: true });
-        return;
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      try {
+        const response = await api.get("/api/trips");
+        setTrips(response.data.trips || []);
+      } catch (err) {
+        if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        console.error("Failed to fetch trips:", err);
+      } finally {
+        setTripsLoading(false);
       }
+    };
 
-      console.error("Failed to fetch trips:", err);
-    } finally {
-      setTripsLoading(false);
-    }
-  };
-
-  fetchTrips();
-}, [navigate]);
+    fetchTrips();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -81,56 +75,88 @@ useEffect(() => {
     );
   }
 
-  
-return (
-  <div>
-    <h1>Welcome to TripVault</h1>
-    <p>Hello, {user?.name || "Traveler"}!</p>
-    <p>Email: {user?.email || "Not available"}</p>
+  return (
+    <div>
+      <h1>Welcome to TripVault</h1>
+      <p>Hello, {user?.name || "Traveler"}!</p>
+      <p>Email: {user?.email || "Not available"}</p>
 
-    <button onClick={handleLogout}>Logout</button>
+      <button onClick={handleLogout}>Logout</button>
 
-    <hr />
+      <hr />
 
-    <h2>My Trips</h2>
+      <h2>My Trips</h2>
 
-    {tripsLoading ? (
-      <p>Loading trips...</p>
-    ) : trips.length === 0 ? (
-      <p>No trips yet. Add your first trip soon!</p>
-    ) : (
-      <div>
-        {trips.map((trip) => (
-          <div key={trip._id}>
-            <h3>{trip.title}</h3>
-            <p>Destination: {trip.destination}</p>
+      {tripsLoading ? (
+        <p>Loading trips...</p>
+      ) : trips.length === 0 ? (
+        <p>No trips yet. Add your first trip soon!</p>
+      ) : (
+        <div>
+          {trips.map((trip) => (
+            <div key={trip._id}>
+              {trip.coverImage ? (
+                <img
+                  src={trip.coverImage}
+                  alt={`Cover of ${trip.title}`}
+                  width="320"
+                  style={{
+                    maxWidth: "100%",
+                    height: "200px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "320px",
+                    maxWidth: "100%",
+                    height: "200px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#f1f5f9",
+                    borderRadius: "8px",
+                  }}
+                >
+                  No cover photo yet
+                </div>
+              )}
 
-            {trip.startDate && (
-              <p>
-                Start date:{" "}
-                {new Date(trip.startDate).toLocaleDateString()}
-              </p>
-            )}
+              <h3>{trip.title}</h3>
+              <p>Destination: {trip.destination}</p>
 
-            {trip.endDate && (
-              <p>
-                End date:{" "}
-                {new Date(trip.endDate).toLocaleDateString()}
-              </p>
-            )}
+              {trip.startDate && (
+                <p>
+                  Start date:{" "}
+                  {new Date(trip.startDate).toLocaleDateString()}
+                </p>
+              )}
 
-            {trip.description && <p>{trip.description}</p>}
+              {trip.endDate && (
+                <p>
+                  End date:{" "}
+                  {new Date(trip.endDate).toLocaleDateString()}
+                </p>
+              )}
 
-            {trip.rating != null && (
-              <p>Rating: {trip.rating}/5</p>
-            )}
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-);
+              {trip.description && <p>{trip.description}</p>}
 
+              {trip.rating != null && (
+                <p>Rating: {trip.rating}/5</p>
+              )}
+
+              <hr />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Dashboard;
