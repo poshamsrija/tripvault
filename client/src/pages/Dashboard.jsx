@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios.js";
 
 function Dashboard() {
@@ -57,10 +57,10 @@ function Dashboard() {
     fetchTrips();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login", { replace: true });
-  };
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  window.location.replace("/login");
+};
 
   if (loading) {
     return <p>Loading dashboard...</p>;
@@ -81,7 +81,23 @@ function Dashboard() {
       <p>Hello, {user?.name || "Traveler"}!</p>
       <p>Email: {user?.email || "Not available"}</p>
 
-      <button onClick={handleLogout}>Logout</button>
+      <nav>
+        {user?.username ? (
+          <Link to={`/profile/${user.username}`}>
+            My Profile
+          </Link>
+        ) : (
+          <p>Username unavailable. Please check your account details.</p>
+        )}
+
+        {" | "}
+
+        <Link to="/trips/new">Create Trip</Link>
+
+        {" | "}
+
+        <button onClick={handleLogout}>Logout</button>
+      </nav>
 
       <hr />
 
