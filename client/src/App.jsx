@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import CreateTrip from "./pages/CreateTrip";
 import PublicProfile from "./pages/PublicProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import TripDetails from "./pages/TripDetails";
 
 function App() {
   return (
@@ -37,9 +38,16 @@ function App() {
             path="/dashboard"
             element={<Dashboard />}
           />
+
           <Route
             path="/trips/new"
             element={<CreateTrip />}
+          />
+
+          {/* Trip details and photo gallery */}
+          <Route
+            path="/trips/:id"
+            element={<TripDetails />}
           />
         </Route>
       </Routes>

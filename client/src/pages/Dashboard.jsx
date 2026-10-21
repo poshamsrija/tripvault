@@ -57,10 +57,10 @@ function Dashboard() {
     fetchTrips();
   }, [navigate]);
 
- const handleLogout = () => {
-  localStorage.removeItem("token");
-  window.location.replace("/login");
-};
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.replace("/login");
+  };
 
   if (loading) {
     return <p>Loading dashboard...</p>;
@@ -87,7 +87,9 @@ function Dashboard() {
             My Profile
           </Link>
         ) : (
-          <p>Username unavailable. Please check your account details.</p>
+          <p>
+            Username unavailable. Please check your account details.
+          </p>
         )}
 
         {" | "}
@@ -143,7 +145,12 @@ function Dashboard() {
                 </div>
               )}
 
-              <h3>{trip.title}</h3>
+              <h3>
+                <Link to={`/trips/${trip._id}`}>
+                  {trip.title}
+                </Link>
+              </h3>
+
               <p>Destination: {trip.destination}</p>
 
               {trip.startDate && (
@@ -165,6 +172,12 @@ function Dashboard() {
               {trip.rating != null && (
                 <p>Rating: {trip.rating}/5</p>
               )}
+
+              <p>
+                <Link to={`/trips/${trip._id}`}>
+                  View Trip &amp; Photos →
+                </Link>
+              </p>
 
               <hr />
             </div>
