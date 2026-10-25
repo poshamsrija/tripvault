@@ -1,7 +1,8 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios.js";
+import "../App.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -29,11 +30,10 @@ function Login() {
       }
 
       localStorage.setItem("token", token);
-
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(
-        err.response?.data?.message || "Login failed. Try again."
+        err.response?.data?.message || err.message || "Login failed. Try again."
       );
     } finally {
       setLoading(false);
@@ -41,35 +41,65 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Login to Account</h2>
+    <main className="auth-page">
+      <section className="auth-card">
+        <div className="auth-brand">
+          <span className="auth-brand-icon">✈</span>
+          <span>TripVault</span>
+        </div>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          placeholder="Enter email"
-          required
-        />
+        <h1>Welcome back!</h1>
+        <p className="auth-subtitle">
+          Sign in to revisit your travel memories.
+        </p>
 
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          placeholder="Enter password"
-          required
-        />
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email address</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging..." : "Login"}
-        </button>
-      </form>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
 
-      {error && <p role="alert">{error}</p>}
-    </div>
+          {error && (
+            <p className="error-message" role="alert">
+              {error}
+            </p>
+          )}
+
+          <button
+            className="btn btn-primary auth-submit"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <p className="auth-switch">
+          New to TripVault? <Link to="/register">Create an account</Link>
+        </p>
+      </section>
+    </main>
   );
 }
 

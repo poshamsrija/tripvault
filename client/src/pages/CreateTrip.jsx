@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios.js";
+import "../App.css";
 
 function CreateTrip() {
   const navigate = useNavigate();
-    const [coverPhoto, setCoverPhoto] = useState(null);
+
+  const [coverPhoto, setCoverPhoto] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     destination: "",
@@ -52,27 +54,23 @@ function CreateTrip() {
           : undefined,
       };
 
-      
-        const response = await api.post("/api/trips", payload);
+      const response = await api.post("/api/trips", payload);
+      const tripId = response.data.trip._id;
 
-        const tripId = response.data.trip._id;
-
-        // Upload the cover photo if one was selected
-        if (coverPhoto) {
+      if (coverPhoto) {
         const imageData = new FormData();
         imageData.append("image", coverPhoto);
 
         await api.post(`/api/trips/${tripId}/upload`, imageData);
-        }
+      }
 
-        setSuccess("Trip created successfully!");
-
+      setSuccess("Trip created successfully!");
 
       setTimeout(() => {
         navigate("/dashboard", {
           state: { newTripId: tripId },
         });
-      }, 700);
+      }, 900);
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
@@ -81,7 +79,8 @@ function CreateTrip() {
       }
 
       setError(
-        err.response?.data?.message || "Failed to create trip."
+        err.response?.data?.message ||
+          "Failed to create trip. Please try again."
       );
     } finally {
       setSaving(false);
@@ -89,103 +88,177 @@ function CreateTrip() {
   };
 
   return (
-    <div>
-      <h1>Create a New Trip</h1>
-      <p>Save the details of your next adventure!</p>
+    <main className="create-trip-page">
+      <header className="create-trip-header">
+        <Link to="/dashboard" className="dashboard-logo">
+          <span className="auth-brand-icon">✈</span>
+          TripVault
+        </Link>
 
-      {error && <p role="alert">{error}</p>}
-      {success && <p role="status">{success}</p>}
+        <Link to="/dashboard" className="back-dashboard-link">
+          ← Dashboard
+        </Link>
+      </header>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="title">Trip title *</label>
-          <input
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div className="create-trip-container">
+        <section className="create-trip-intro">
+          <p className="dashboard-eyebrow">YOUR NEXT ADVENTURE</p>
+          <h1>Create a New Trip</h1>
+          <p>
+            Every great journey starts with a plan. Save the details
+            of your next adventure here.
+          </p>
+        </section>
 
-        <div>
-          <label htmlFor="destination">Destination *</label>
-          <input
-            id="destination"
-            name="destination"
-            value={formData.destination}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <section className="create-trip-card">
+          <div className="create-trip-card-heading">
+            <span className="create-trip-icon">🌍</span>
+            <div>
+              <h2>Trip details</h2>
+              <p>Tell us a little about your journey.</p>
+            </div>
+          </div>
 
-        <div>
-          <label htmlFor="startDate">Start date</label>
-          <input
-            id="startDate"
-            name="startDate"
-            type="date"
-            value={formData.startDate}
-            onChange={handleChange}
-          />
-        </div>
+          {error && (
+            <div className="trip-alert trip-alert-error" role="alert">
+              {error}
+            </div>
+          )}
 
-        <div>
-          <label htmlFor="endDate">End date</label>
-          <input
-            id="endDate"
-            name="endDate"
-            type="date"
-            value={formData.endDate}
-            onChange={handleChange}
-          />
-        </div>
+          {success && (
+            <div className="trip-alert trip-alert-success" role="status">
+              {success}
+            </div>
+          )}
 
-        <div>
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-          />
-        </div>
+          <form onSubmit={handleSubmit} className="create-trip-form">
+            <div className="form-group">
+              <label htmlFor="title">Trip title *</label>
+              <input
+                id="title"
+                name="title"
+                type="text"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="e.g. My Goa Getaway"
+                required
+                maxLength={100}
+              />
+            </div>
 
-        <div>
-          <label htmlFor="rating">Rating (1–5)</label>
-          <select
-            id="rating"
-            name="rating"
-            value={formData.rating}
-            onChange={handleChange}
-          >
-            <option value="">Not rated</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-        </div>
-        <div>
-        <label htmlFor="coverPhoto">Cover Photo</label>
-        <input
-            id="coverPhoto"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            onChange={(e) => setCoverPhoto(e.target.files[0])}
-        />
-        </div>
-        <button type="submit" disabled={saving}>
-          {saving ? "Creating trip..." : "Create Trip"}
-        </button>
-      </form>
+            <div className="form-group">
+              <label htmlFor="destination">Destination *</label>
+              <input
+                id="destination"
+                name="destination"
+                type="text"
+                value={formData.destination}
+                onChange={handleChange}
+                placeholder="e.g. Goa, India"
+                required
+              />
+            </div>
 
-      <p>
-        <Link to="/dashboard">Back to Dashboard</Link>
-      </p>
-    </div>
+            <div className="create-trip-date-grid">
+              <div className="form-group">
+                <label htmlFor="startDate">Start date</label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  max={formData.endDate || undefined}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="endDate">End date</label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  min={formData.startDate || undefined}
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="description">Trip description</label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="What are you looking forward to on this trip?"
+                rows={4}
+                maxLength={2000}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="rating">Your trip rating</label>
+              <select
+                id="rating"
+                name="rating"
+                value={formData.rating}
+                onChange={handleChange}
+              >
+                <option value="">Not rated yet</option>
+                <option value="1">⭐ 1 — Poor</option>
+                <option value="2">⭐⭐ 2 — Fair</option>
+                <option value="3">⭐⭐⭐ 3 — Good</option>
+                <option value="4">⭐⭐⭐⭐ 4 — Very good</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5 — Excellent</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="coverPhoto">Cover photo</label>
+              <div className="trip-upload-box">
+                <span className="trip-upload-icon">📷</span>
+                <p>
+                  {coverPhoto
+                    ? coverPhoto.name
+                    : "Choose a photo for your trip"}
+                </p>
+                <span className="trip-upload-hint">
+                  JPG, PNG or WebP
+                </span>
+                <input
+                  id="coverPhoto"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(event) =>
+                    setCoverPhoto(event.target.files?.[0] || null)
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="create-trip-actions">
+              <Link to="/dashboard" className="btn btn-secondary">
+                Cancel
+              </Link>
+
+              <button
+                className="btn btn-primary create-trip-submit"
+                type="submit"
+                disabled={saving}
+              >
+                {saving ? "Creating trip..." : "✈ Create Trip"}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <p className="create-trip-note">
+          Your journeys are saved to your personal TripVault.
+        </p>
+      </div>
+    </main>
   );
 }
 
