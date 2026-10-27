@@ -1,15 +1,18 @@
 
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios.js";
 import "../App.css";
 
 function TripDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [trip, setTrip] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -26,6 +29,12 @@ function TripDetails() {
         }
       } catch (err) {
         if (!cancelled) {
+          if (err.response?.status === 401) {
+            localStorage.removeItem("token");
+            navigate("/login", { replace: true });
+            return;
+          }
+
           setError(
             err.response?.data?.message ||
               "Unable to load this trip. Please try again."
@@ -43,7 +52,40 @@ function TripDetails() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, navigate]);
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${trip.title}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      setActionMessage("");
+
+      await api.delete(`/api/trips/${id}`);
+
+      navigate("/dashboard", {
+        replace: true,
+        state: { message: "Trip deleted successfully." },
+      });
+    } catch (err) {
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      setActionMessage(
+        err.response?.data?.message ||
+          "Failed to delete trip. Please try again."
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -114,6 +156,12 @@ function TripDetails() {
           ← Back to My Adventures
         </Link>
 
+        {actionMessage && (
+          <div className="trip-alert trip-alert-error" role="alert">
+            {actionMessage}
+          </div>
+        )}
+
         <section className="trip-details-card">
           {trip.coverImage ? (
             <img
@@ -173,6 +221,24 @@ function TripDetails() {
                 <p>{trip.description}</p>
               </section>
             )}
+
+            <div className="create-trip-actions">
+              <Link
+                to={`/trips/${id}/edit`}
+                className="btn btn-primary"
+              >
+                ✏️ Edit Trip
+              </Link>
+
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "🗑️ Delete Trip"}
+              </button>
+            </div>
           </div>
         </section>
 

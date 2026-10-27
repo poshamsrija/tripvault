@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CreateTrip from "./pages/CreateTrip";
+import EditTrip from "./pages/EditTrip";
 import PublicProfile from "./pages/PublicProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TripDetails from "./pages/TripDetails";
@@ -26,13 +27,13 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Public profile: login is not required */}
+        {/* Public profile */}
         <Route
           path="/profile/:username"
           element={<PublicProfile />}
         />
 
-        {/* Protected routes: login is required */}
+        {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route
             path="/dashboard"
@@ -44,10 +45,14 @@ function App() {
             element={<CreateTrip />}
           />
 
-          {/* Trip details and photo gallery */}
           <Route
             path="/trips/:id"
             element={<TripDetails />}
+          />
+
+          <Route
+            path="/trips/:id/edit"
+            element={<EditTrip />}
           />
         </Route>
       </Routes>
