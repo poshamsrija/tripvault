@@ -13,6 +13,7 @@ function Dashboard() {
   const [trips, setTrips] = useState([]);
   const [tripsLoading, setTripsLoading] = useState(true);
   const [tripsError, setTripsError] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -82,7 +83,9 @@ function Dashboard() {
     return (
       <main className="dashboard-page">
         <div className="page-container">
-          <p className="error-message" role="alert">{error}</p>
+          <p className="error-message" role="alert">
+            {error}
+          </p>
           <button className="btn btn-primary" onClick={handleLogout}>
             Back to Login
           </button>
@@ -94,17 +97,42 @@ function Dashboard() {
   return (
     <main className="dashboard-page">
       <header className="dashboard-header">
-        <Link to="/dashboard" className="dashboard-logo">
+        <Link
+          to="/dashboard"
+          className="dashboard-logo"
+          onClick={() => setMenuOpen(false)}
+        >
           <span className="auth-brand-icon">✈</span>
           TripVault
         </Link>
 
-        <nav className="dashboard-nav" aria-label="Main navigation">
+        <button
+          type="button"
+          className="menu-toggle"
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={menuOpen}
+          aria-controls="dashboard-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? "✕" : "☰"}
+        </button>
+
+        <nav
+          id="dashboard-navigation"
+          className={`dashboard-nav ${menuOpen ? "menu-open" : ""}`}
+          aria-label="Main navigation"
+        >
           {user?.username && (
-            <Link to={`/profile/${user.username}`}>My Profile</Link>
+            <Link
+              to={`/profile/${user.username}`}
+              onClick={() => setMenuOpen(false)}
+            >
+              My Profile
+            </Link>
           )}
 
           <button
+            type="button"
             className="btn btn-secondary"
             onClick={handleLogout}
           >
@@ -148,7 +176,9 @@ function Dashboard() {
             </div>
           ) : tripsError ? (
             <div className="dashboard-message">
-              <p className="error-message" role="alert">{tripsError}</p>
+              <p className="error-message" role="alert">
+                {tripsError}
+              </p>
               <button
                 className="btn btn-secondary"
                 onClick={() => window.location.reload()}
@@ -233,7 +263,7 @@ function Dashboard() {
                       to={`/trips/${trip._id}`}
                       className="trip-card-link"
                     >
-                      View trip & photos →
+                      View trip &amp; photos →
                     </Link>
                   </div>
                 </article>
