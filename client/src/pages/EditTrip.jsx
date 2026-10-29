@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api/axios.js";
 import "../App.css";
@@ -7,6 +7,8 @@ import "../App.css";
 function EditTrip() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const previewUrlsRef = useRef([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -17,10 +19,12 @@ function EditTrip() {
     rating: "",
   });
 
+  const [currentCover, setCurrentCover] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const [coverIndex, setCoverIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const fetchTrip = async () => {
@@ -37,8 +41,10 @@ function EditTrip() {
           startDate: formatDate(trip.startDate),
           endDate: formatDate(trip.endDate),
           description: trip.description || "",
-          rating: trip.rating ? String(trip.rating) : "",
+          rating: trip.rating != null ? String(trip.rating) : "",
         });
+
+        setCurrentCover(trip.coverImage || "");
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
@@ -58,6 +64,14 @@ function EditTrip() {
     fetchTrip();
   }, [id, navigate]);
 
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) =>
+        URL.revokeObjectURL(url)
+      );
+    };
+  }, []);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -67,10 +81,62 @@ function EditTrip() {
     }));
   };
 
+  const handlePhotoChange = (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (!files.length) return;
+
+    const invalidFile = files.find(
+      (file) => !file.type.startsWith("image/")
+    );
+
+    if (invalidFile) {
+      setError("Please select image files only.");
+      event.target.value = "";
+      return;
+    }
+
+    const newPhotos = files.map((file) => {
+      const preview = URL.createObjectURL(file);
+      previewUrlsRef.current.push(preview);
+      return { file, preview };
+    });
+
+    setPhotos((previous) => [...previous, ...newPhotos]);
+
+    // If no new cover is selected yet, use the first newly added photo.
+    setCoverIndex((previous) =>
+      previous === -1 ? 0 : previous
+    );
+
+    setError("");
+    event.target.value = "";
+  };
+
+  const removePhoto = (index) => {
+    setPhotos((previous) => {
+      const removed = previous[index];
+
+      if (removed) {
+        URL.revokeObjectURL(removed.preview);
+        previewUrlsRef.current = previewUrlsRef.current.filter(
+          (url) => url !== removed.preview
+        );
+      }
+
+      return previous.filter((_, photoIndex) => photoIndex !== index);
+    });
+
+    setCoverIndex((previous) => {
+      if (previous === index) return -1;
+      if (previous > index) return previous - 1;
+      return previous;
+    });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    setSuccess("");
 
     if (
       formData.startDate &&
@@ -91,11 +157,24 @@ function EditTrip() {
           : undefined,
       });
 
-      setSuccess("Trip updated successfully!");
+      // Upload each selected photo.
+      for (let index = 0; index < photos.length; index++) {
+        const photoData = new FormData();
 
-      setTimeout(() => {
-        navigate(`/trips/${id}`, { replace: true });
-      }, 800);
+        // Send the flag before the file field.
+        if (index === coverIndex) {
+          photoData.append("replaceCover", "true");
+        }
+
+        photoData.append("image", photos[index].file);
+
+        await api.post(`/api/trips/${id}/upload`, photoData);
+      }
+
+      navigate(`/trips/${id}`, {
+        replace: true,
+        state: { message: "Trip updated successfully!" },
+      });
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
@@ -105,7 +184,7 @@ function EditTrip() {
 
       setError(
         err.response?.data?.message ||
-          "Failed to update trip. Please try again."
+          "Update failed. Please try again."
       );
     } finally {
       setSaving(false);
@@ -143,10 +222,7 @@ function EditTrip() {
           TripVault
         </Link>
 
-        <Link
-          to={`/trips/${id}`}
-          className="back-dashboard-link"
-        >
+        <Link to={`/trips/${id}`} className="back-dashboard-link">
           ← Back to trip
         </Link>
       </header>
@@ -155,7 +231,7 @@ function EditTrip() {
         <section className="create-trip-intro">
           <p className="dashboard-eyebrow">YOUR JOURNEY</p>
           <h1>Edit Trip</h1>
-          <p>Update the details of your travel memory.</p>
+          <p>Update your travel details and add new memories.</p>
         </section>
 
         <section className="create-trip-card">
@@ -170,15 +246,6 @@ function EditTrip() {
           {error && (
             <div className="trip-alert trip-alert-error" role="alert">
               {error}
-            </div>
-          )}
-
-          {success && (
-            <div
-              className="trip-alert trip-alert-success"
-              role="status"
-            >
-              {success}
             </div>
           )}
 
@@ -261,6 +328,91 @@ function EditTrip() {
               </select>
             </div>
 
+            <div className="form-group">
+              <label>Current cover photo</label>
+
+              {currentCover ? (
+                <img
+                  src={currentCover}
+                  alt="Current trip cover"
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    maxHeight: "260px",
+                    objectFit: "cover",
+                    borderRadius: "12px",
+                    marginBottom: "12px",
+                  }}
+                />
+              ) : (
+                <p>No cover photo uploaded yet.</p>
+              )}
+
+              <label htmlFor="edit-photos">Add photos</label>
+              <input
+                ref={fileInputRef}
+                id="edit-photos"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoChange}
+              />
+
+              <small>
+                Select multiple images. Choose one below if you want
+                to replace the current cover photo.
+              </small>
+            </div>
+
+            {photos.length > 0 && (
+              <div className="form-group">
+                <label>New photos — choose the cover</label>
+
+                <div className="trip-gallery-grid">
+                  {photos.map((photo, index) => (
+                    <figure
+                      className="trip-gallery-item"
+                      key={photo.preview}
+                    >
+                      <img
+                        src={photo.preview}
+                        alt={`New trip photo ${index + 1}`}
+                      />
+
+                      <figcaption>
+                        <label>
+                          <input
+                            type="radio"
+                            name="newCover"
+                            checked={coverIndex === index}
+                            onChange={() => setCoverIndex(index)}
+                          />
+                          {coverIndex === index
+                            ? "New cover photo"
+                            : "Set as cover"}
+                        </label>
+
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => removePhoto(index)}
+                          disabled={saving}
+                        >
+                          Remove
+                        </button>
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+
+                {coverIndex === -1 && (
+                  <small>
+                    No new cover selected. Your current cover will stay.
+                  </small>
+                )}
+              </div>
+            )}
+
             <div className="create-trip-actions">
               <Link
                 to={`/trips/${id}`}
@@ -274,7 +426,7 @@ function EditTrip() {
                 type="submit"
                 disabled={saving}
               >
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? "Saving photos..." : "Save Changes"}
               </button>
             </div>
           </form>

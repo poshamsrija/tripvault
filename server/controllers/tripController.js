@@ -1,6 +1,7 @@
 
 const Trip = require("../models/Trip");
 
+// Create a new trip
 const createTrip = async (req, res) => {
   try {
     const {
@@ -34,12 +35,14 @@ const createTrip = async (req, res) => {
     });
   } catch (error) {
     console.error("Create trip error:", error.message);
+
     return res.status(500).json({
       message: "Failed to create trip.",
     });
   }
 };
 
+// Get all trips belonging to the logged-in user
 const getTrips = async (req, res) => {
   try {
     const trips = await Trip.find({
@@ -52,12 +55,14 @@ const getTrips = async (req, res) => {
     });
   } catch (error) {
     console.error("Get trips error:", error.message);
+
     return res.status(500).json({
       message: "Failed to fetch trips.",
     });
   }
 };
 
+// Get one trip by ID
 const getTripById = async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -83,12 +88,14 @@ const getTripById = async (req, res) => {
     }
 
     console.error("Get trip by ID error:", error.message);
+
     return res.status(500).json({
       message: "Failed to fetch trip.",
     });
   }
 };
 
+// Update trip details
 const updateTrip = async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -135,12 +142,14 @@ const updateTrip = async (req, res) => {
     }
 
     console.error("Update trip error:", error.message);
+
     return res.status(500).json({
       message: "Failed to update trip.",
     });
   }
 };
 
+// Delete a trip
 const deleteTrip = async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -170,12 +179,14 @@ const deleteTrip = async (req, res) => {
     }
 
     console.error("Delete trip error:", error.message);
+
     return res.status(500).json({
       message: "Failed to delete trip.",
     });
   }
 };
 
+// Upload a photo or replace the cover photo
 const uploadTripPhoto = async (req, res) => {
   try {
     const trip = await Trip.findById(req.params.id);
@@ -199,17 +210,22 @@ const uploadTripPhoto = async (req, res) => {
     }
 
     const imageUrl = req.file.path;
+    const replaceCover = req.body.replaceCover === "true";
 
+    // Keep the image in the trip gallery
     trip.photos.push(imageUrl);
 
-    if (!trip.coverImage) {
+    // Use it as the cover if no cover exists or replacement was requested
+    if (!trip.coverImage || replaceCover) {
       trip.coverImage = imageUrl;
     }
 
     await trip.save();
 
     return res.status(200).json({
-      message: "Photo uploaded successfully.",
+      message: replaceCover
+        ? "Cover photo updated successfully."
+        : "Photo uploaded successfully.",
       coverImage: trip.coverImage,
       photos: trip.photos,
     });

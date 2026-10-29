@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios.js";
 import "../App.css";
@@ -7,7 +7,9 @@ import "../App.css";
 function CreateTrip() {
   const navigate = useNavigate();
 
-  const [coverPhoto, setCoverPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [coverIndex, setCoverIndex] = useState(0);
+
   const [formData, setFormData] = useState({
     title: "",
     destination: "",
@@ -18,8 +20,13 @@ function CreateTrip() {
   });
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      photos.forEach((photo) => URL.revokeObjectURL(photo.preview));
+    };
+  }, [photos]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -30,10 +37,48 @@ function CreateTrip() {
     }));
   };
 
+  const handlePhotoChange = (event) => {
+    const selected = Array.from(event.target.files || []);
+    event.target.value = "";
+
+    if (selected.length === 0) return;
+
+    const validPhotos = selected.filter(
+      (file) =>
+        ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+    );
+
+    if (validPhotos.length !== selected.length) {
+      setError("Please select only JPG, PNG, or WebP images.");
+      if (validPhotos.length === 0) return;
+    } else {
+      setError("");
+    }
+
+    const newPhotos = validPhotos.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setPhotos((previous) => [...previous, ...newPhotos]);
+  };
+
+  const removePhoto = (index) => {
+    setPhotos((previous) => {
+      URL.revokeObjectURL(previous[index].preview);
+      return previous.filter((_, i) => i !== index);
+    });
+
+    setCoverIndex((previousCover) => {
+      if (index === previousCover) return 0;
+      if (index < previousCover) return previousCover - 1;
+      return previousCover;
+    });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    setSuccess("");
 
     if (
       formData.startDate &&
@@ -49,28 +94,31 @@ function CreateTrip() {
 
       const payload = {
         ...formData,
-        rating: formData.rating
-          ? Number(formData.rating)
-          : undefined,
+        rating: formData.rating ? Number(formData.rating) : undefined,
       };
 
       const response = await api.post("/api/trips", payload);
       const tripId = response.data.trip._id;
 
-      if (coverPhoto) {
+      // Upload all photos, placing the selected cover photo first.
+      const orderedPhotos = photos.length
+        ? [
+            photos[coverIndex],
+            ...photos.filter((_, index) => index !== coverIndex),
+          ]
+        : [];
+
+      for (let index = 0; index < orderedPhotos.length; index++) {
         const imageData = new FormData();
-        imageData.append("image", coverPhoto);
+        imageData.append("image", orderedPhotos[index].file);
 
         await api.post(`/api/trips/${tripId}/upload`, imageData);
       }
 
-      setSuccess("Trip created successfully!");
-
-      setTimeout(() => {
-        navigate("/dashboard", {
-          state: { newTripId: tripId },
-        });
-      }, 900);
+      navigate("/dashboard", {
+        replace: true,
+        state: { newTripId: tripId },
+      });
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem("token");
@@ -80,7 +128,7 @@ function CreateTrip() {
 
       setError(
         err.response?.data?.message ||
-          "Failed to create trip. Please try again."
+          "Failed to create trip or upload photos. Please try again."
       );
     } finally {
       setSaving(false);
@@ -106,7 +154,7 @@ function CreateTrip() {
           <h1>Create a New Trip</h1>
           <p>
             Every great journey starts with a plan. Save the details
-            of your next adventure here.
+            and photos of your adventure here.
           </p>
         </section>
 
@@ -125,19 +173,12 @@ function CreateTrip() {
             </div>
           )}
 
-          {success && (
-            <div className="trip-alert trip-alert-success" role="status">
-              {success}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="create-trip-form">
             <div className="form-group">
               <label htmlFor="title">Trip title *</label>
               <input
                 id="title"
                 name="title"
-                type="text"
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. My Goa Getaway"
@@ -151,7 +192,6 @@ function CreateTrip() {
               <input
                 id="destination"
                 name="destination"
-                type="text"
                 value={formData.destination}
                 onChange={handleChange}
                 placeholder="e.g. Goa, India"
@@ -192,7 +232,7 @@ function CreateTrip() {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="What are you looking forward to on this trip?"
+                placeholder="What are you looking forward to?"
                 rows={4}
                 maxLength={2000}
               />
@@ -216,26 +256,54 @@ function CreateTrip() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="coverPhoto">Cover photo</label>
+              <label htmlFor="tripPhotos">Trip photos</label>
+
               <div className="trip-upload-box">
                 <span className="trip-upload-icon">📷</span>
-                <p>
-                  {coverPhoto
-                    ? coverPhoto.name
-                    : "Choose a photo for your trip"}
-                </p>
+                <p>Select multiple photos for your gallery</p>
                 <span className="trip-upload-hint">
-                  JPG, PNG or WebP
+                  JPG, PNG or WebP · Select multiple files at once
                 </span>
                 <input
-                  id="coverPhoto"
+                  id="tripPhotos"
                   type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(event) =>
-                    setCoverPhoto(event.target.files?.[0] || null)
-                  }
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={handlePhotoChange}
                 />
               </div>
+
+              {photos.length > 0 && (
+                <>
+                  <p>{photos.length} photo(s) selected</p>
+
+                  <div className="trip-gallery-grid">
+                    {photos.map((photo, index) => (
+                      <figure className="trip-gallery-item" key={photo.preview}>
+                        <img src={photo.preview} alt={`Selected trip photo ${index + 1}`} />
+                        <figcaption>
+                          <label>
+                            <input
+                              type="radio"
+                              name="coverSelection"
+                              checked={coverIndex === index}
+                              onChange={() => setCoverIndex(index)}
+                            />
+                            {coverIndex === index ? "Cover photo" : "Set as cover"}
+                          </label>
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => removePhoto(index)}
+                          >
+                            Remove
+                          </button>
+                        </figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="create-trip-actions">
@@ -248,7 +316,7 @@ function CreateTrip() {
                 type="submit"
                 disabled={saving}
               >
-                {saving ? "Creating trip..." : "✈ Create Trip"}
+                {saving ? "Creating trip and uploading photos..." : "✈ Create Trip"}
               </button>
             </div>
           </form>
