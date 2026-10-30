@@ -1,42 +1,75 @@
-# TripVault
+# ✈️ TripVault – Your Personal Travel Memory Journal
 
-A travel memory journal built using the MERN stack.
+**TripVault** is a full-stack MERN travel journal application that helps users create, organize, and preserve their travel memories in one place.
 
-TripVault is a web application designed to help users keep track of their travel memories. The current implementation includes user registration, login, JWT-based authentication, protected routes, and a personalized dashboard.
+Users can register, log in securely, create travel entries, upload multiple trip photos, select cover images, edit trip details, and manage their personal travel collections through a responsive interface.
 
-## Features
+🌐 **Live Application:** https://tripvault-topaz.vercel.app
 
-- **User Registration:** Create an account with secure password hashing.
-- **User Login:** Authenticate users and generate JWT tokens.
-- **Protected Routes:** Restrict access to authenticated pages.
-- **User Dashboard:** Display authenticated user information.
-- **JWT Authentication:** Secure backend endpoints using token verification.
-- **Logout:** Clear the stored token and return to the login page.
-- **Error Handling:** Handle invalid credentials, duplicate registration, and API errors.
+💻 **GitHub Repository:** https://github.com/poshamsrija/tripvault
 
-## Tech Stack
+---
 
-**Frontend**
-- React
-- Vite
-- React Router
-- Axios
-- CSS
+## ✨ Features
 
-**Backend**
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JSON Web Token (JWT)
-- bcryptjs
-- dotenv
-- CORS
+### 🔐 Authentication & Security
+- User registration and login.
+- Secure password hashing using bcryptjs.
+- JWT-based authentication.
+- Protected routes and authenticated API requests.
+- User-specific trip management.
+- Secure logout functionality.
 
-## Project Structure
+### 🌍 Trip Management
+- Create trips with titles and destinations.
+- Add start dates, end dates, descriptions, and ratings.
+- View individual trip details.
+- Edit existing trip information.
+- Delete trips with confirmation.
+- View personal trips through the dashboard.
+
+### 📸 Photo Management
+- Upload multiple photos for a trip.
+- Select a cover photo.
+- Replace the existing cover photo while editing.
+- Preview selected images before uploading.
+- Store uploaded images using Cloudinary.
+- Display trip memories in a photo gallery.
+
+### 📱 User Experience
+- Responsive interface for desktop and mobile devices.
+- Mobile hamburger navigation.
+- Loading and error states.
+- Consistent styling across application pages.
+- User-friendly forms and navigation.
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technologies |
+|---|---|
+| Frontend | React.js, Vite |
+| Routing | React Router |
+| API Requests | Axios |
+| Styling | CSS |
+| Backend | Node.js, Express.js |
+| Database | MongoDB Atlas |
+| ODM | Mongoose |
+| Authentication | JWT, bcryptjs |
+| Image Storage | Cloudinary |
+| Environment Configuration | dotenv |
+| Deployment – Frontend | Vercel |
+| Deployment – Backend | Render |
+| Version Control | Git, GitHub |
+
+---
+
+## 📂 Project Structure
 
 ```text
-TripVault/
+tripvault/
+│
 ├── client/
 │   ├── public/
 │   ├── src/
@@ -48,7 +81,9 @@ TripVault/
 │   │   ├── pages/
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── Login.jsx
-│   │   │   └── Register.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── CreateTrip.jsx
+│   │   │   └── EditTrip.jsx
 │   │   ├── App.jsx
 │   │   ├── App.css
 │   │   ├── index.css
@@ -61,32 +96,57 @@ TripVault/
 │   │   └── db.js
 │   ├── controllers/
 │   │   ├── authLoginController.js
-│   │   └── authRegisterController.js
+│   │   ├── authRegisterController.js
+│   │   └── tripController.js
 │   ├── middleware/
-│   │   └── authMiddleware.js
+│   │   ├── authMiddleware.js
+│   │   └── upload.js
 │   ├── models/
-│   │   └── User.js
+│   │   ├── User.js
+│   │   └── Trip.js
 │   ├── routes/
+│   │   ├── authRegisterRoutes.js
 │   │   ├── authLoginRoutes.js
-│   │   └── authRegisterRoutes.js
+│   │   └── tripRoutes.js
 │   ├── index.js
 │   └── package.json
 │
 └── README.md
 ```
 
-## Getting Started
+---
+
+## 🚀 Live Deployment
+
+TripVault is deployed using:
+
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** MongoDB Atlas
+- **Image Hosting:** Cloudinary
+
+Visit the live application:
+
+**https://tripvault-topaz.vercel.app**
+
+---
+
+## ⚙️ Getting Started
+
+Follow these instructions to run TripVault locally.
 
 ### Prerequisites
 
 - Node.js and npm
-- MongoDB Atlas account or a local MongoDB instance
+- MongoDB Atlas account or local MongoDB instance
+- Cloudinary account
 - Git
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/poshamsrija/tripvault.git
+
 cd tripvault
 ```
 
@@ -94,37 +154,47 @@ cd tripvault
 
 ```bash
 cd server
+
 npm install
 ```
 
-Create a `.env` file inside the `server` directory:
+Create a `.env` file inside the `server` directory.
 
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_jwt_secret
+
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-Replace the placeholder values with your own configuration. Keep your actual `.env` file private.
+Use the exact Cloudinary environment variable names expected by your backend configuration.
 
-Start the backend in development mode:
+Replace the placeholder values with your own credentials.
+
+Start the backend:
 
 ```bash
 npm run dev
 ```
 
-The backend runs on `http://localhost:5000` by default.
+The backend runs at:
+
+`http://localhost:5000`
 
 ### 3. Set Up the Frontend
 
-Open a new terminal from the project root:
+Open another terminal:
 
 ```bash
 cd client
+
 npm install
 ```
 
-Create a `.env` file inside the `client` directory:
+Create a `.env` file inside the `client` directory.
 
 ```env
 VITE_API_URL=http://localhost:5000
@@ -136,60 +206,107 @@ Start the frontend:
 npm run dev
 ```
 
-Open the local URL displayed by Vite in your browser.
+Open the local URL displayed in your terminal by Vite.
 
-## API Endpoints
+---
 
-Base URL: `http://localhost:5000`
+## 🔗 API Routes
+
+The following trip routes are available:
 
 | Method | Endpoint | Description | Authentication |
 |---|---|---|---|
-| GET | `/` | API welcome message | Not required |
-| POST | `/api/auth/register` | Register a new user | Not required |
-| POST | `/api/auth/login` | Log in and receive a JWT | Not required |
-| GET | `/api/auth/me` | Retrieve authenticated user details | Required |
+| GET | `/` | API welcome message | No |
+| POST | `/api/trips` | Create a trip | Yes |
+| GET | `/api/trips` | Get user's trips | Yes |
+| GET | `/api/trips/:id` | Get trip details | Yes |
+| PUT | `/api/trips/:id` | Update trip details | Yes |
+| DELETE | `/api/trips/:id` | Delete a trip | Yes |
+| POST | `/api/trips/:id/upload` | Upload a trip photo | Yes |
 
-For the protected `/api/auth/me` endpoint, include the JWT in the request header:
+Authentication routes are mounted under `/api/auth`.
+
+All protected trip routes require a valid JWT in the Authorization header:
 
 ```http
 Authorization: Bearer <your_jwt_token>
 ```
 
-## Available Scripts
+---
+
+## 🔑 Authentication Flow
+
+1. A user registers with their account details.
+2. The backend hashes the password before saving user information.
+3. The user logs in using their credentials.
+4. The backend verifies the credentials and generates a JWT.
+5. The frontend stores the authentication token.
+6. Axios attaches the token to protected API requests.
+7. Authentication middleware verifies the token before allowing access to protected resources.
+8. Logging out clears the stored token.
+
+---
+
+## 📸 Screenshots
+
+Screenshots of the application will be added here.
+
+Suggested screenshots:
+
+- Login page
+- Registration page
+- User dashboard
+- Create Trip page
+- Trip details and photo gallery
+- Edit Trip page
+- Mobile responsive view
+
+---
+
+## 📋 Available Scripts
 
 ### Backend
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start the backend using Nodemon |
-| `npm start` | Start the backend using Node.js |
+| `npm install` | Install backend dependencies |
+| `npm run dev` | Start backend using Nodemon |
+| `npm start` | Start backend using Node.js |
 
 ### Frontend
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Build the frontend for production |
-| `npm run preview` | Preview the production build |
+| `npm install` | Install frontend dependencies |
+| `npm run dev` | Start Vite development server |
+| `npm run build` | Create production build |
+| `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint checks |
 
-## Authentication Flow
+---
 
-1. A user registers with their details.
-2. The backend hashes the password before storing user information.
-3. The user logs in using their credentials.
-4. The backend verifies the credentials and returns a JWT.
-5. The frontend stores the token and uses it for authenticated API requests.
-6. Protected pages require a token to access the dashboard.
-7. The backend verifies the token before returning protected user information.
-8. Logging out removes the stored token.
+## 🔒 Security Notes
 
-## Development Status
+- Keep `.env` files out of GitHub.
+- Never expose MongoDB credentials, JWT secrets, or Cloudinary API secrets.
+- Use environment variables for sensitive configuration.
+- Protected endpoints require authentication.
+- Users can manage only their own trips.
 
-The current version focuses on the authentication system and dashboard. Additional travel-journal features can be developed in future iterations.
+---
 
-## Author
+## 👩‍💻 Author
 
 **Srija Posham**
 
-GitHub: [poshamsrija](https://github.com/poshamsrija)
+B.Tech – Computer Science and Engineering
+
+GitHub: https://github.com/poshamsrija
+
+---
+
+## ⭐ Acknowledgements
+
+Built as a full-stack development project to explore modern web technologies, authentication, database integration, cloud image storage, responsive UI development, and application deployment.
+
+**TripVault – Every journey deserves to be remembered! ✈️**
