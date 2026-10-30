@@ -1,6 +1,6 @@
 # ✈️ TripVault – Your Personal Travel Memory Journal
 
-**TripVault** is a full-stack MERN travel journal application that helps users create, organize, and preserve their travel memories in one place.
+TripVault is a full-stack MERN travel journal application that helps users create, organize, and preserve their travel memories in one place.
 
 Users can register, log in securely, create travel entries, upload multiple trip photos, select cover images, edit trip details, and manage their personal travel collections through a responsive interface.
 
@@ -59,60 +59,28 @@ Users can register, log in securely, create travel entries, upload multiple trip
 | Authentication | JWT, bcryptjs |
 | Image Storage | Cloudinary |
 | Environment Configuration | dotenv |
-| Deployment – Frontend | Vercel |
-| Deployment – Backend | Render |
+| Frontend Deployment | Vercel |
+| Backend Deployment | Render |
 | Version Control | Git, GitHub |
 
 ---
 
-## 📂 Project Structure
+## 📸 Application Screenshots
 
-```text
-tripvault/
-│
-├── client/
-│   ├── public/
-│   ├── src/
-│   │   ├── api/
-│   │   │   └── axios.js
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   └── ProtectedRoute.jsx
-│   │   ├── pages/
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── CreateTrip.jsx
-│   │   │   └── EditTrip.jsx
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── index.html
-│   └── package.json
-│
-├── server/
-│   ├── config/
-│   │   └── db.js
-│   ├── controllers/
-│   │   ├── authLoginController.js
-│   │   ├── authRegisterController.js
-│   │   └── tripController.js
-│   ├── middleware/
-│   │   ├── authMiddleware.js
-│   │   └── upload.js
-│   ├── models/
-│   │   ├── User.js
-│   │   └── Trip.js
-│   ├── routes/
-│   │   ├── authRegisterRoutes.js
-│   │   ├── authLoginRoutes.js
-│   │   └── tripRoutes.js
-│   ├── index.js
-│   └── package.json
-│
-└── README.md
-```
+### Login Page
+![Login Page](screenshots/login.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### Create Trip
+![Create Trip](screenshots/createTrip.png)
+
+### Trip Details
+![Trip Details](screenshots/trip-details.png)
+
+### Edit Trip
+![Edit Trip](screenshots/edit-trip.png)
 
 ---
 
@@ -125,9 +93,7 @@ TripVault is deployed using:
 - **Database:** MongoDB Atlas
 - **Image Hosting:** Cloudinary
 
-Visit the live application:
-
-**https://tripvault-topaz.vercel.app**
+**Live Application:** https://tripvault-topaz.vercel.app
 
 ---
 
@@ -146,7 +112,6 @@ Follow these instructions to run TripVault locally.
 
 ```bash
 git clone https://github.com/poshamsrija/tripvault.git
-
 cd tripvault
 ```
 
@@ -154,7 +119,6 @@ cd tripvault
 
 ```bash
 cd server
-
 npm install
 ```
 
@@ -170,9 +134,7 @@ CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-Use the exact Cloudinary environment variable names expected by your backend configuration.
-
-Replace the placeholder values with your own credentials.
+Replace the placeholder values with your actual credentials. Use the exact Cloudinary environment variable names expected by your backend configuration.
 
 Start the backend:
 
@@ -186,11 +148,10 @@ The backend runs at:
 
 ### 3. Set Up the Frontend
 
-Open another terminal:
+Open another terminal and navigate to the client folder:
 
 ```bash
 cd client
-
 npm install
 ```
 
@@ -244,22 +205,6 @@ Authorization: Bearer <your_jwt_token>
 6. Axios attaches the token to protected API requests.
 7. Authentication middleware verifies the token before allowing access to protected resources.
 8. Logging out clears the stored token.
-
----
-
-## 📸 Screenshots
-
-Screenshots of the application will be added here.
-
-Suggested screenshots:
-
-- Login page
-- Registration page
-- User dashboard
-- Create Trip page
-- Trip details and photo gallery
-- Edit Trip page
-- Mobile responsive view
 
 ---
 
